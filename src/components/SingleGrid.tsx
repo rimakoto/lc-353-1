@@ -20,7 +20,6 @@ interface SingleGridProps {
 
 const GRID_SIZE = 200;
 const LINE_WIDTH = 8;
-const CSS_GRID_SIZE = '100%';
 
 export function SingleGrid({
   character,
@@ -34,8 +33,11 @@ export function SingleGrid({
   const [currentPath, setCurrentPath] = useState<PathPoint[]>([]);
   const [status, setStatus] = useState<GridStatus>('idle');
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
-  const [charMask, setCharMask] = useState<Uint8ClampedArray | null>(null);
   const charMaskRef = useRef<Uint8ClampedArray | null>(null);
+
+  const pathsRef = useRef<PathPoint[][]>([]);
+  const onScoreComputedRef = useRef<((score: number) => void) | undefined>(undefined);
+  onScoreComputedRef.current = onScoreComputed;
 
   const fontFamily =
     character.type === 'chinese'
@@ -51,12 +53,12 @@ export function SingleGrid({
         fontFamily,
         fontSize
       );
-      setCharMask(mask);
       charMaskRef.current = mask;
     } catch (e) {
       console.error('Failed to create char mask:', e);
     }
     setPaths([]);
+    pathsRef.current = [];
     setCurrentPath([]);
     setStatus('idle');
     setScoreResult(null);
@@ -148,7 +150,7 @@ export function SingleGrid({
 
   const computeScore = useCallback(() => {
     if (!charMaskRef.current) return;
-    const allPaths = paths;
+    const allPaths = pathsRef.current;
     if (allPaths.length === 0) return;
 
     try {
@@ -160,11 +162,11 @@ export function SingleGrid({
       } else {
         setStatus('failed');
       }
-      onScoreComputed?.(result.score);
+      onScoreComputedRef.current?.(result.score);
     } catch (e) {
       console.error('Failed to compute score:', e);
     }
-  }, [paths, onScoreComputed]);
+  }, []);
 
   const evaluateTimerRef = useRef<number | null>(null);
 
@@ -182,7 +184,9 @@ export function SingleGrid({
       setCurrentPath((prev) => [...prev, point]);
     },
     onStrokeEnd: (path) => {
-      setPaths((prev) => [...prev, path]);
+      const newPaths = [...pathsRef.current, path];
+      pathsRef.current = newPaths;
+      setPaths(newPaths);
       setCurrentPath([]);
       if (evaluateTimerRef.current) {
         window.clearTimeout(evaluateTimerRef.current);
@@ -197,6 +201,7 @@ export function SingleGrid({
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     setPaths([]);
+    pathsRef.current = [];
     setCurrentPath([]);
     setStatus('idle');
     setScoreResult(null);
@@ -246,7 +251,7 @@ export function SingleGrid({
         className="block touch-none w-full h-auto"
         style={{
           aspectRatio: '1 / 1',
-          maxWidth: CSS_GRID_SIZE,
+          maxWidth: '100%',
           cursor:
             status === 'completed'
               ? 'default'

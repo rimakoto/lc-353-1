@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Character } from '@/types';
 import { SingleGrid } from './SingleGrid';
 import { useProgressStore } from '@/store/useProgressStore';
@@ -12,27 +12,26 @@ const GRID_COUNT = 9;
 export function MiZiGeCanvas({ character }: MiZiGeCanvasProps) {
   const [activeGrid, setActiveGrid] = useState(0);
   const [scoredGrids, setScoredGrids] = useState<Set<number>>(new Set());
-  const scoredGridsRef = useRef<Set<number>>(new Set());
   const recordScore = useProgressStore((s) => s.recordScore);
 
   useEffect(() => {
     setScoredGrids(new Set());
-    scoredGridsRef.current = new Set();
     setActiveGrid(0);
   }, [character.id]);
 
   const handleScoreComputed = useCallback(
     (gridIndex: number, score: number) => {
-      if (!scoredGridsRef.current.has(gridIndex)) {
-        scoredGridsRef.current.add(gridIndex);
-        setScoredGrids(new Set(scoredGridsRef.current));
-        if (score >= 50) {
-          recordScore(character.id, score);
-        }
-      }
+      setScoredGrids((prev) => {
+        const next = new Set(prev);
+        next.add(gridIndex);
+        return next;
+      });
+      recordScore(character.id, score);
     },
     [character.id, recordScore]
   );
+
+  const scoredGridsArr = Array.from(scoredGrids);
 
   return (
     <div
@@ -73,9 +72,9 @@ export function MiZiGeCanvas({ character }: MiZiGeCanvasProps) {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs text-gray-500">已完成</p>
+          <p className="text-xs text-gray-500">已描摹</p>
           <p className="text-2xl font-bold text-red-500" style={{ fontFamily: '"KaiTi", serif' }}>
-            {scoredGrids.size}
+            {scoredGridsArr.length}
             <span className="text-sm text-gray-400 font-normal">/{GRID_COUNT}</span>
           </p>
         </div>
