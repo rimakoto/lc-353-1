@@ -20,6 +20,7 @@ interface SingleGridProps {
 
 const GRID_SIZE = 200;
 const LINE_WIDTH = 8;
+const CSS_GRID_SIZE = '100%';
 
 export function SingleGrid({
   character,
@@ -242,8 +243,10 @@ export function SingleGrid({
         ref={canvasRef}
         width={GRID_SIZE}
         height={GRID_SIZE}
-        className="block touch-none"
+        className="block touch-none w-full h-auto"
         style={{
+          aspectRatio: '1 / 1',
+          maxWidth: CSS_GRID_SIZE,
           cursor:
             status === 'completed'
               ? 'default'

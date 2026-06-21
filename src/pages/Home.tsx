@@ -21,16 +21,16 @@ export default function Home() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-stagger">
-          <div className="lg:col-span-3 space-y-6 order-2 lg:order-1">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 animate-stagger">
+          <div className="xl:col-span-3 space-y-6 order-2 xl:order-1 min-w-0">
             <CharacterPanel />
           </div>
 
-          <div className="lg:col-span-6 order-1 lg:order-2">
+          <div className="xl:col-span-6 order-1 xl:order-2 min-w-0 w-full">
             <MiZiGeCanvas character={currentCharacter} />
           </div>
 
-          <div className="lg:col-span-3 space-y-6 order-3">
+          <div className="xl:col-span-3 space-y-6 order-3 min-w-0">
             <ProgressPanel />
 
             <div className="bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden">

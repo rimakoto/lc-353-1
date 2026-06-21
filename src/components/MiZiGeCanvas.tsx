@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Character } from '@/types';
 import { SingleGrid } from './SingleGrid';
 import { useProgressStore } from '@/store/useProgressStore';
@@ -12,24 +12,32 @@ const GRID_COUNT = 9;
 export function MiZiGeCanvas({ character }: MiZiGeCanvasProps) {
   const [activeGrid, setActiveGrid] = useState(0);
   const [scoredGrids, setScoredGrids] = useState<Set<number>>(new Set());
+  const scoredGridsRef = useRef<Set<number>>(new Set());
   const recordScore = useProgressStore((s) => s.recordScore);
+
+  useEffect(() => {
+    setScoredGrids(new Set());
+    scoredGridsRef.current = new Set();
+    setActiveGrid(0);
+  }, [character.id]);
 
   const handleScoreComputed = useCallback(
     (gridIndex: number, score: number) => {
-      if (!scoredGrids.has(gridIndex)) {
-        setScoredGrids((prev) => new Set(prev).add(gridIndex));
+      if (!scoredGridsRef.current.has(gridIndex)) {
+        scoredGridsRef.current.add(gridIndex);
+        setScoredGrids(new Set(scoredGridsRef.current));
         if (score >= 50) {
           recordScore(character.id, score);
         }
       }
     },
-    [character.id, recordScore, scoredGrids]
+    [character.id, recordScore]
   );
 
   return (
     <div
       key={character.id}
-      className="p-6 rounded-2xl bg-gradient-to-br from-amber-50/80 via-orange-50/60 to-yellow-50/80 border-2 border-amber-200/60 shadow-inner"
+      className="p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-50/80 via-orange-50/60 to-yellow-50/80 border-2 border-amber-200/60 shadow-inner min-w-0"
     >
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -73,16 +81,17 @@ export function MiZiGeCanvas({ character }: MiZiGeCanvasProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full min-w-0">
         {Array.from({ length: GRID_COUNT }).map((_, index) => (
-          <SingleGrid
-            key={`${character.id}-${index}`}
-            character={character}
-            gridIndex={index}
-            isActive={activeGrid === index}
-            onClick={() => setActiveGrid(index)}
-            onScoreComputed={(score) => handleScoreComputed(index, score)}
-          />
+          <div key={`${character.id}-${index}`} className="min-w-0">
+            <SingleGrid
+              character={character}
+              gridIndex={index}
+              isActive={activeGrid === index}
+              onClick={() => setActiveGrid(index)}
+              onScoreComputed={(score) => handleScoreComputed(index, score)}
+            />
+          </div>
         ))}
       </div>
 
